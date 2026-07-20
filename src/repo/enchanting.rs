@@ -72,9 +72,11 @@ repository!(Enchanting,
     }
 ,
     /// Adds bless charges to the player's account (creating the row if needed).
+    /// A freshly created row gets attempts_date = 'epoch' so that the first /ench
+    /// of the day still grants the daily attempts (see get_or_init).
     pub async fn add_blesses(&self, uid: UserId, chat_id_internal: i64, amount: i32) -> anyhow::Result<()> {
         sqlx::query(
-            "INSERT INTO Enchanting (uid, chat_id, bless_charges) VALUES ($1, $2, $3)
+            "INSERT INTO Enchanting (uid, chat_id, bless_charges, attempts_date) VALUES ($1, $2, $3, 'epoch')
                 ON CONFLICT (chat_id, uid) DO UPDATE SET bless_charges = Enchanting.bless_charges + $3")
             .bind(uid.0 as i64)
             .bind(chat_id_internal)
