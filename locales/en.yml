@@ -93,6 +93,36 @@ commands:
       no_dicks: "It seems you don't have any dicks yet. 🤔 Right now is the time to add me into a chat and execute the <code>/grow</code> command!"
     inline:
       switch_button: "Activate promo code '%{code}'…"
+  ench:
+    description: "No dick? Enchant your vagina!"
+    success: "🔧 Clink-clink! The enchant succeeded (the chance was <b>%{chance}%</b>) — your kitty shines at <b>+%{level}</b>!"
+    success_bless: "✨ The bless landed perfectly (the chance was <b>%{chance}%</b>)! Your kitty glows with divine light at <b>+%{level}</b>. Blesses left: <b>%{blesses}</b>."
+    fail: "💥 CRACK! A failure (the chance was <b>%{chance}%</b>)... The enchant crumbled to dust, the kitty is virginally dull again: <b>+0</b>."
+    fail_bless: "🛡 A failure (the chance was <b>%{chance}%</b>), but the bless saved your precious! The enchant stays at <b>+%{level}</b>. Blesses left: <b>%{blesses}</b>."
+    attempts_left: "Enchant attempts left for today: <b>%{left}</b>."
+    errors:
+      no_vagina: "Where are you going?! With a <b>%{length} cm</b> tool there is nothing to enchant — vaginas are for those at zero or below."
+      no_attempts: "No enchant attempts left for today, grinder."
+      no_blesses: "You have no bless scrolls! Wait for the /bless mercy or win them in /sex."
+  bless:
+    description: "The Vagina of the Day election with a bless giveaway"
+    result: "🙏 The heavens have opened! The Vagina of the Day is <b><a href=\"tg://user?id=%{uid}\">%{name}</a></b>! <b>%{amount}</b> bless scroll(s) have been granted. Enchant wisely."
+    already_chosen: "The Vagina of the Day has already been elected today! The heavens are tired."
+    no_candidates: "There is not a single vagina in this chat — everyone has dicks. No one to bless 🤷"
+  sex:
+    description: "Vagina versus dick! The worthy may answer."
+    start: "🍑 <b>%{name}</b> spreads the legs: a vagina enchanted to <b>+%{sharpness}</b> seeks a daredevil!\n\nAny dick of <b>%{sharpness} cm</b> or longer may answer. The odds are 50/50: a bite-off or a dulling."
+    button: "Stick it in!"
+    vagina_wins: "🦷 CHOMP! The vagina of <b><a href=\"tg://user?id=%{initiator_uid}\">%{initiator_name}</a></b> bit off exactly <b>%{sharpness} cm</b> from <b><a href=\"tg://user?id=%{defender_uid}\">%{defender_name}</a></b>!\n\nNow she owns a dick of <b>%{sharpness} cm</b>, while the victim is left with <b>%{defender_length} cm</b>. What a toothy one."
+    dick_wins: "🍆 The dick of <b><a href=\"tg://user?id=%{defender_uid}\">%{defender_name}</a></b> stood its ground and won!\n\nThe vagina of <b><a href=\"tg://user?id=%{initiator_uid}\">%{initiator_name}</a></b> is dulled to <b>+0</b>, and the winner receives <b>%{blesses}</b> bless scroll(s) for a rainy day."
+    errors:
+      no_vagina: "You have a dick, not a vagina. /pvp is your place, warrior."
+      not_sharpened: "Your vagina is not enchanted! /ench first, romance later."
+      same_person: "With yourself? Wrong chat for that."
+      too_short: "Your sprout is shorter than this vagina's enchant. Don't embarrass yourself 😬"
+      expired: "The train has left: this vagina is not what it used to be (or is a dick already)."
+  gnomes:
+    raid: "🌚 This night the <b>dick-thief gnomes</b> sneaked into the chat and sawed off <b>%{stolen} cm</b> from <b><a href=\"tg://user?id=%{uid}\">%{name}</a></b>!\n\nThe poor guy is left with <b>%{length} cm</b>. Sleep tight, long ones…"
 inline:
   results:
     text: "Since I cannot determine the chat by an inline query, you should click on the button bellow to get the result."

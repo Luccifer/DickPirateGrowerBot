@@ -5,7 +5,7 @@ use teloxide::requests::Requester;
 use teloxide::types::{BotCommand, BotCommandScope};
 use teloxide::utils::command::BotCommands;
 use crate::config::CachedEnvToggles;
-use crate::handlers::{DickCommands, DickOfDayCommands, HelpCommands, ImportCommands, LoanCommands, PrivacyCommands, PromoCommands};
+use crate::handlers::{BlessCommands, DickCommands, DickOfDayCommands, EnchCommands, HelpCommands, ImportCommands, LoanCommands, PrivacyCommands, PromoCommands, SexCommands};
 use crate::handlers::pvp::BattleCommands;
 use crate::handlers::stats::StatsCommands;
 
@@ -23,6 +23,9 @@ pub async fn set_my_commands(bot: &Bot, lang_code: &str, toggles: &CachedEnvTogg
         BattleCommands::bot_commands(),
         LoanCommands::bot_commands(),
         StatsCommands::bot_commands(),
+        EnchCommands::bot_commands(),
+        BlessCommands::bot_commands(),
+        SexCommands::bot_commands(),
     ];
     let admin_commands = [group_commands.clone(), vec![
         ImportCommands::bot_commands(),

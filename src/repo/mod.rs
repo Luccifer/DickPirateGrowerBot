@@ -7,6 +7,7 @@ mod loans;
 mod pvpstats;
 mod stats;
 mod announcements;
+mod enchanting;
 
 #[cfg(test)]
 pub(crate) mod test;
@@ -24,6 +25,7 @@ pub use loans::*;
 pub use pvpstats::*;
 pub use stats::*;
 pub use announcements::*;
+pub use enchanting::*;
 use crate::config;
 use crate::config::DatabaseConfig;
 
@@ -38,6 +40,7 @@ pub struct Repositories {
     pub announcements: Announcements,
     pub pvp_stats: BattleStatsRepo,
     pub personal_stats: PersonalStatsRepo,
+    pub enchanting: Enchanting,
 }
 
 impl Repositories {
@@ -52,6 +55,7 @@ impl Repositories {
             announcements: Announcements::new(db_conn.clone(), config.announcements.clone()),
             pvp_stats: BattleStatsRepo::new(db_conn.clone(), config.features),
             personal_stats: PersonalStatsRepo::new(db_conn.clone()),
+            enchanting: Enchanting::new(db_conn.clone()),
         }
     }
 }

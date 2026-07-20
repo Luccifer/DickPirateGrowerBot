@@ -18,6 +18,7 @@ use teloxide::update_listeners::webhooks::{axum_to_router, Options};
 use teloxide::update_listeners::UpdateListener;
 use crate::handlers::{checks, HelpCommands, LoanCommands, PrivacyCommands, PromoCommandState, StartCommands};
 use crate::handlers::{DickCommands, DickOfDayCommands, ImportCommands, PromoCommands};
+use crate::handlers::{BlessCommands, EnchCommands, SexCommands};
 use crate::handlers::pvp::{BattleCommands, BattleCommandsNoArgs};
 use crate::handlers::stats::StatsCommands;
 use crate::handlers::utils::locks::LockCallbackServiceFacade;
@@ -45,6 +46,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .branch(Update::filter_message().filter_command::<DickOfDayCommands>().filter(checks::is_group_chat).endpoint(handlers::dod_cmd_handler))
         .branch(Update::filter_message().filter_command::<BattleCommands>().filter(checks::is_group_chat).endpoint(handlers::pvp::cmd_handler))
         .branch(Update::filter_message().filter_command::<BattleCommandsNoArgs>().filter(checks::is_group_chat).endpoint(handlers::pvp::cmd_handler_no_args))
+        .branch(Update::filter_message().filter_command::<EnchCommands>().filter(checks::is_group_chat).endpoint(handlers::ench_cmd_handler))
+        .branch(Update::filter_message().filter_command::<BlessCommands>().filter(checks::is_group_chat).endpoint(handlers::bless_cmd_handler))
+        .branch(Update::filter_message().filter_command::<SexCommands>().filter(checks::is_group_chat).endpoint(handlers::sex_cmd_handler))
         .branch(Update::filter_message().filter_command::<StatsCommands>().endpoint(handlers::stats::cmd_handler))
         .branch(Update::filter_message().filter_command::<LoanCommands>().filter(checks::is_group_chat).endpoint(handlers::loan::cmd_handler))
         .branch(Update::filter_message().filter_command::<ImportCommands>().filter(checks::is_group_chat).endpoint(handlers::import_cmd_handler))
@@ -61,6 +65,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .branch(Update::filter_chosen_inline_result().endpoint(handlers::inline_chosen_handler))
         .branch(Update::filter_callback_query().filter(handlers::page_callback_filter).endpoint(handlers::page_callback_handler))
         .branch(Update::filter_callback_query().filter(handlers::pvp::callback_filter).endpoint(handlers::pvp::callback_handler))
+        .branch(Update::filter_callback_query().filter(handlers::sex_callback_filter).endpoint(handlers::sex_callback_handler))
         .branch(Update::filter_callback_query().filter(handlers::loan::callback_filter).endpoint(handlers::loan::callback_handler))
         .branch(Update::filter_callback_query().endpoint(handlers::callback_handler));
 
@@ -85,6 +90,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let help_context = config::build_context_for_help_messages(me, &incrementor, &handlers::ORIGINAL_BOT_USERNAMES)?;
     let help_container = help::render_help_messages(help_context)?;
     let battle_locker = LockCallbackServiceFacade::from_config(app_config.features);
+
+    handlers::spawn_gnome_scheduler(bot.clone(), repos.clone());
 
     let webhook_url: Option<Url> = match std::env::var(ENV_WEBHOOK_URL) {
         Ok(env_url) if !env_url.is_empty() => Some(env_url.parse()?),
