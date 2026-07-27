@@ -305,15 +305,16 @@ pub async fn sex_callback_handler(bot: Bot, query: CallbackQuery, repos: Reposit
 
     let vagina_wins = OsRng.gen_ratio(1, 2);
     let text = if vagina_wins {
-        // the vagina bites the dick off and becomes a dick of that very length
+        // the vagina bites the dick off: a strict zero-sum transfer of `sharpness` cm.
+        // (Setting the length to exactly `sharpness` allowed players in deep minus to erase
+        // the whole debt hole with a 1 cm bite — the "farm" dupe of 26.07.2026.)
         let defender_res = repos.dicks.grow_no_attempts_check(&chat_id.kind(), defender.id, -sharpness).await?;
-        let initiator_length = repos.dicks.fetch_length(data.initiator, &chat_id.kind()).await?;
-        repos.dicks.grow_no_attempts_check(&chat_id.kind(), data.initiator, sharpness - initiator_length).await?;
+        let initiator_res = repos.dicks.grow_no_attempts_check(&chat_id.kind(), data.initiator, sharpness).await?;
         repos.enchanting.reset_sharpness(data.initiator, chat_internal).await?;
         t!("commands.sex.vagina_wins", locale = &lang_code,
             initiator_uid = data.initiator.0, initiator_name = initiator_name,
             defender_uid = defender.id.0, defender_name = defender_name,
-            sharpness = sharpness, defender_length = defender_res.new_length).to_string()
+            sharpness = sharpness, initiator_length = initiator_res.new_length, defender_length = defender_res.new_length).to_string()
     } else {
         // the dick stands its ground: the vagina is dulled, the winner gets half the sharpness in blesses
         repos.enchanting.reset_sharpness(data.initiator, chat_internal).await?;

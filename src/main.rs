@@ -92,6 +92,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let battle_locker = LockCallbackServiceFacade::from_config(app_config.features);
 
     handlers::spawn_gnome_scheduler(bot.clone(), repos.clone());
+    handlers::spawn_farm_rollback_announcer(bot.clone(), db_conn.clone());
 
     let webhook_url: Option<Url> = match std::env::var(ENV_WEBHOOK_URL) {
         Ok(env_url) if !env_url.is_empty() => Some(env_url.parse()?),

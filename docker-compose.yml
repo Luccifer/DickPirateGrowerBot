@@ -37,6 +37,16 @@ services:
       - ANNOUNCEMENT_MAX_SHOWS
       - ANNOUNCEMENT_EN
       - ANNOUNCEMENT_RU
+      - ENCH_ATTEMPTS_PER_DAY
+      - ENCH_SAFE_LEVEL
+      - ENCH_DIFFICULTY
+      - ENCH_CHANCE_MIN
+      - ENCH_CHANCE_MAX
+      - BLESS_DAILY_AMOUNT
+      - GNOMES_MIN_LENGTH
+      - GNOMES_STEAL
+      - GNOMES_RAID_HOUR_UTC
+      - GNOMES_LOCALE
     expose:
       - 8080
     networks:
