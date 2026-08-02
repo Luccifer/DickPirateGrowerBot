@@ -26,6 +26,8 @@ pub enum EnchCommands {
     Ench,
     #[command(description = "enchb")]
     Enchb,
+    #[command(description = "inv")]
+    Inv,
 }
 
 #[derive(BotCommands, Clone)]
@@ -130,6 +132,17 @@ pub async fn ench_cmd_handler(bot: Bot, msg: Message, cmd: EnchCommands, repos: 
     repos.users.create_or_update(from.id, &name).await?;
     let chat_internal = repos.chats.upsert_chat(&chat_id).await?;
 
+    // /inv: just show the pouch; unlike the sharpening itself, it works for dick owners too
+    if matches!(cmd, EnchCommands::Inv) {
+        let daily_attempts = roll_range(&cfg.attempts_per_day);
+        let state = repos.enchanting.get_or_init(from.id, chat_internal, daily_attempts).await?;
+        let answer = t!("commands.inv.result", locale = &lang_code,
+            attempts = state.attempts_left, max_attempts = *cfg.attempts_per_day.end(),
+            blesses = state.bless_charges, sharpness = state.sharpness);
+        reply_html!(bot, msg, answer);
+        return Ok(())
+    }
+
     let length = repos.dicks.fetch_length(from.id, &chat_id.kind()).await?;
     if length > 0 {
         let answer = t!("commands.ench.errors.no_vagina", locale = &lang_code, length = length);
@@ -139,9 +152,12 @@ pub async fn ench_cmd_handler(bot: Bot, msg: Message, cmd: EnchCommands, repos: 
 
     let daily_attempts = roll_range(&cfg.attempts_per_day);
     let state = repos.enchanting.get_or_init(from.id, chat_internal, daily_attempts).await?;
-    let with_bless = matches!(cmd, EnchCommands::Enchb);
+    let out_of_attempts = state.attempts_left <= 0;
+    // out of the daily attempts? bless charges become the fuel and the sharpening goes on
+    let bless_fueled = out_of_attempts && state.bless_charges > 0;
+    let with_bless = matches!(cmd, EnchCommands::Enchb) || bless_fueled;
 
-    let answer = if state.attempts_left <= 0 {
+    let answer = if out_of_attempts && !bless_fueled {
         let time_left = utils::date::get_time_till_next_day_string(&lang_code);
         format!("{}{}", t!("commands.ench.errors.no_attempts", locale = &lang_code), time_left)
     } else if with_bless && state.bless_charges <= 0 {
@@ -158,11 +174,14 @@ pub async fn ench_cmd_handler(bot: Bot, msg: Message, cmd: EnchCommands, repos: 
         } else {
             0
         };
-        let applied = repos.enchanting.apply_ench_attempt(from.id, chat_internal, new_sharpness, with_bless).await?;
+        let applied = if bless_fueled {
+            repos.enchanting.apply_bless_fueled_attempt(from.id, chat_internal, new_sharpness).await?
+        } else {
+            repos.enchanting.apply_ench_attempt(from.id, chat_internal, new_sharpness, with_bless).await?
+        };
         if !applied {
             t!("commands.ench.errors.no_attempts", locale = &lang_code).to_string()
         } else {
-            let left = state.attempts_left - 1;
             let key = match (success, with_bless) {
                 (true, false) => "commands.ench.success",
                 (true, true) => "commands.ench.success_bless",
@@ -171,7 +190,11 @@ pub async fn ench_cmd_handler(bot: Bot, msg: Message, cmd: EnchCommands, repos: 
             };
             let main_part = t!(key, locale = &lang_code,
                 level = new_sharpness, chance = chance, blesses = (state.bless_charges - if with_bless { 1 } else { 0 }));
-            let left_part = t!("commands.ench.attempts_left", locale = &lang_code, left = left);
+            let left_part = if bless_fueled {
+                t!("commands.ench.blesses_fuel_left", locale = &lang_code, left = state.bless_charges - 1)
+            } else {
+                t!("commands.ench.attempts_left", locale = &lang_code, left = state.attempts_left - 1)
+            };
             format!("{main_part}\n{left_part}")
         }
     };
@@ -331,7 +354,7 @@ pub async fn sex_callback_handler(bot: Bot, query: CallbackQuery, repos: Reposit
     Ok(())
 }
 
-/// Spawns the background scheduler of the gnome raids: every day at GNOMES_RAID_HOUR_UTC
+/// Spawns the background scheduler of the gnome raids: every day, strictly at GNOMES_RAID_HOUR_UTC
 /// one player with a dick longer than GNOMES_MIN_LENGTH per chat gets robbed by the gnomes.
 pub fn spawn_gnome_scheduler(bot: Bot, repos: Repositories) {
     tokio::spawn(async move {
@@ -341,12 +364,8 @@ pub fn spawn_gnome_scheduler(bot: Bot, repos: Repositories) {
             let today_raid = now.date_naive()
                 .and_hms_opt(cfg.gnomes_raid_hour_utc.min(23), 0, 0)
                 .expect("a valid raid time");
-            if now.naive_utc() >= today_raid {
-                // the raid hour has already passed today: catch up (chats raided today are filtered out)
-                if let Err(e) = run_gnome_raids(&bot, &repos, cfg).await {
-                    log::error!("the gnome raid failed: {e}");
-                }
-            }
+            // no catch-up on start: raids fire strictly at the scheduled hour,
+            // so restarts never consume or duplicate the daily slot
             let next_raid = if now.naive_utc() < today_raid {
                 today_raid
             } else {
@@ -355,6 +374,7 @@ pub fn spawn_gnome_scheduler(bot: Bot, repos: Repositories) {
             let sleep_for = (next_raid - now.naive_utc())
                 .to_std()
                 .unwrap_or(std::time::Duration::from_secs(3600));
+            log::info!("the gnomes are asleep until {next_raid} UTC");
             tokio::time::sleep(sleep_for).await;
             if let Err(e) = run_gnome_raids(&bot, &repos, cfg).await {
                 log::error!("the gnome raid failed: {e}");

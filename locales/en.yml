@@ -100,10 +100,16 @@ commands:
     fail: "💥 CRACK! A failure (the chance was <b>%{chance}%</b>)... The enchant crumbled to dust, the kitty is virginally dull again: <b>+0</b>."
     fail_bless: "🛡 A failure (the chance was <b>%{chance}%</b>), but the bless saved your precious! The enchant stays at <b>+%{level}</b>. Blesses left: <b>%{blesses}</b>."
     attempts_left: "Enchant attempts left for today: <b>%{left}</b>."
+    blesses_fuel_left: "The daily attempts are out — bless scrolls fuel the grind now! Blesses left: <b>%{left}</b>."
     errors:
       no_vagina: "Where are you going?! With a <b>%{length} cm</b> tool there is nothing to enchant — vaginas are for those at zero or below."
       no_attempts: "No enchant attempts left for today, grinder."
       no_blesses: "You have no bless scrolls! Wait for the /bless mercy or win them in /sex."
+  enchb:
+    description: "Enchant under a bless: a failure doesn't reset the sharpness"
+  inv:
+    description: "Inventory: attempts, blesses, sharpness"
+    result: "🎒 <b>Inventory</b>\nAttempts for today: <b>%{attempts}</b> of %{max_attempts}\nBless scrolls: <b>%{blesses}</b>\nCurrent sharpness: <b>+%{sharpness}</b>"
   bless:
     description: "The Vagina of the Day election with a bless giveaway"
     result: "🙏 The heavens have opened! The Vagina of the Day is <b><a href=\"tg://user?id=%{uid}\">%{name}</a></b>! <b>%{amount}</b> bless scroll(s) have been granted. Enchant wisely."

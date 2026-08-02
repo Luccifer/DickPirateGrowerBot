@@ -71,6 +71,23 @@ repository!(Enchanting,
         Ok(res.rows_affected() == 1)
     }
 ,
+    /// Spends one bless charge as the fuel for an extra attempt when the daily attempts are gone.
+    /// Returns false if there was no fuel left — protects against double-clicks and races.
+    pub async fn apply_bless_fueled_attempt(&self, uid: UserId, chat_id_internal: i64, new_sharpness: i32) -> anyhow::Result<bool> {
+        let res = sqlx::query(
+            "UPDATE Enchanting SET
+                    bless_charges = bless_charges - 1,
+                    sharpness = $3
+                WHERE uid = $1 AND chat_id = $2 AND attempts_left <= 0 AND bless_charges > 0")
+            .bind(uid.0 as i64)
+            .bind(chat_id_internal)
+            .bind(new_sharpness)
+            .execute(&self.pool)
+            .await
+            .context(format!("couldn't apply a bless-fueled ench attempt of {uid} in {chat_id_internal}"))?;
+        Ok(res.rows_affected() == 1)
+    }
+,
     /// Adds bless charges to the player's account (creating the row if needed).
     /// A freshly created row gets attempts_date = 'epoch' so that the first /ench
     /// of the day still grants the daily attempts (see get_or_init).
